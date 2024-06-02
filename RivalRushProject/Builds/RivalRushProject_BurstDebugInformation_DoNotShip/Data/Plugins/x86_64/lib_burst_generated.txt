@@ -25,7 +25,6 @@ Library: D:\GitRepositories\RivalRush\RivalRushProject\Temp\BurstOutput\Data\Plu
 --assembly-defines=Unity.2D.SpriteShape.Runtime;
 --assembly-defines=Unity.2D.PixelPerfect;
 --assembly-defines=Unity.Mathematics;
---assembly-defines=PhotonUnityNetworking.Demos;
 --assembly-defines=PhotonUnityNetworking.Utilities;
 --assembly-defines=Unity.TextMeshPro;
 --assembly-defines=Unity.VisualScripting.State;
@@ -59,7 +58,6 @@ Library: D:\GitRepositories\RivalRush\RivalRushProject\Temp\BurstOutput\Data\Plu
 --linker-options=PdbAltPath="RivalRushProject_Data/Plugins/x86_64/lib_burst_generated.pdb"
 --generate-link-xml=Temp\burst.link.xml
 --temp-folder=D:\GitRepositories\RivalRush\RivalRushProject\Temp\Burst
---debug=Full
 --key-folder=D:/Unity/Editor/2022.3.12f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport
 --decode-folder=D:\GitRepositories\RivalRush\RivalRushProject\Library\Burst
 --output=D:\GitRepositories\RivalRush\RivalRushProject\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
@@ -122,7 +120,6 @@ Library: D:\GitRepositories\RivalRush\RivalRushProject\Temp\BurstOutput\Data\Plu
 --assembly-defines=Unity.2D.SpriteShape.Runtime;
 --assembly-defines=Unity.2D.PixelPerfect;
 --assembly-defines=Unity.Mathematics;
---assembly-defines=PhotonUnityNetworking.Demos;
 --assembly-defines=PhotonUnityNetworking.Utilities;
 --assembly-defines=Unity.TextMeshPro;
 --assembly-defines=Unity.VisualScripting.State;
@@ -156,7 +153,6 @@ Library: D:\GitRepositories\RivalRush\RivalRushProject\Temp\BurstOutput\Data\Plu
 --linker-options=PdbAltPath="RivalRushProject_Data/Plugins/x86_64/lib_burst_generated.pdb"
 --generate-link-xml=Temp\burst.link.xml
 --temp-folder=D:\GitRepositories\RivalRush\RivalRushProject\Temp\Burst
---debug=Full
 --key-folder=D:/Unity/Editor/2022.3.12f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport
 --decode-folder=D:\GitRepositories\RivalRush\RivalRushProject\Library\Burst
 --output=D:\GitRepositories\RivalRush\RivalRushProject\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
