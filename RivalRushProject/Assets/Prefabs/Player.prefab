@@ -31,7 +31,7 @@ Transform:
   m_GameObject: {fileID: 2285055692194894627}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.539, z: -1}
+  m_LocalPosition: {x: 0, y: 2.539, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -217,7 +217,8 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   observableSearch: 2
-  ObservedComponents: []
+  ObservedComponents:
+  - {fileID: 5697035379657434315}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -320,9 +321,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   offset: 90
-  bullet: {fileID: 3906044787051454512, guid: c9d43c646dc7c7746889e9b3943fce2d, type: 3}
+  bulletPrefab: {fileID: 0}
   shotPoint: {fileID: 4641586699025352477}
-  startTimeBtwShots: 0
+  maxAmmo: 30
+  timeBetweenShots: 0.5
+  bulletSpeed: 10
+  playerCamera: {fileID: 0}
 --- !u!1 &7071143140250579929
 GameObject:
   m_ObjectHideFlags: 0

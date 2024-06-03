@@ -94,7 +94,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     {
         if ((moveVector.x > 0 && !faceRight) || (moveVector.x < 0 && faceRight))
         {
-            transform.localScale *= new Vector2(-1, 1);
+            transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
             faceRight = !faceRight;
         }
     }
@@ -137,7 +137,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
 
             if (newFaceRight != faceRight)
             {
-                transform.localScale *= new Vector2(-1, 1);
+                transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
                 faceRight = newFaceRight;
             }
         }
