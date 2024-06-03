@@ -97,7 +97,7 @@ public class ShootingArm : MonoBehaviourPun
         {
             Vector3 mousePosition = playerCamera.ScreenToWorldPoint(Input.mousePosition);
             Vector3 direction = (mousePosition - position).normalized;
-            Debug.Log("Direction: " + direction);
+            //Debug.Log("Direction: " + direction);
             bulletRb.velocity = direction * bulletSpeed;
         }
     }

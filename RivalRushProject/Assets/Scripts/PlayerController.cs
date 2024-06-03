@@ -1,12 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using UnityEngine.UI;
 using Photon.Pun;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
 {
-  [SerializeField] private float walkSpeed = 2f;
+    [SerializeField] private float walkSpeed = 2f;
     [SerializeField] private float runSpeed = 10f;
     [SerializeField] private float realSpeed;
 
@@ -17,7 +19,9 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
 
     private float horizontalInput;
     private Vector2 moveVector;
+    
     private Rigidbody2D rb;
+    private PhotonView PV;
 
     [SerializeField] private Animator anim;
 
@@ -29,6 +33,15 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] private LayerMask Ground;
 
     public int coins = 0;
+    
+    public int maxHealth = 100;
+    public int currentHealth;
+
+    private PlayerManager playerManager;
+
+    [SerializeField] private GameObject UI;
+    [SerializeField] private Image healthBarImage;
+    [SerializeField] private TMP_Text coinsTextMeshPro;
 
     private void Awake()
     {
@@ -37,6 +50,20 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         groundCheck = transform.Find("groundCheck");
 
         realSpeed = walkSpeed;
+        
+        PV = GetComponent<PhotonView>();
+
+        playerManager = PhotonView.Find((int)PV.InstantiationData[0]).GetComponent<PlayerManager>();
+    }
+
+    private void Start()
+    {
+        if (!PV.IsMine)
+        {
+            Destroy(UI);
+        }
+        currentHealth = maxHealth; // Устанавливаем текущее здоровье равным максимальному при старте
+        coinsTextMeshPro.text = coins.ToString();
     }
 
     private void Update()
@@ -55,6 +82,11 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
             anim.SetFloat("moveX", Mathf.Abs(moveVector.x));
             anim.SetBool("run", realSpeed == runSpeed);
             anim.SetBool("onGround", onGround);
+        }
+
+        if (transform.position.y < -15f)
+        {
+            Die();
         }
     }
 
@@ -108,13 +140,21 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     public void AddCoin(int amount)
     {
         coins += amount;
-        // Здесь можно добавить логику для отображения количества монет на UI и т.д.
+        UpdateCoinsUI(); // Обновляем UI при изменении количества монет
     }
 
     public void RemoveCoin(int amount)
     {
         coins -= amount;
-        // Здесь можно добавить логику для отображения количества монет на UI и т.д.
+        UpdateCoinsUI(); // Обновляем UI при изменении количества монет
+    }
+
+    private void UpdateCoinsUI()
+    {
+        if (coinsTextMeshPro != null)
+        {
+            coinsTextMeshPro.text = coins.ToString(); // Обновляем текст с количеством монет
+        }
     }
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
@@ -140,6 +180,39 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
                 transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
                 faceRight = newFaceRight;
             }
+        }
+    }
+    [PunRPC]
+    public void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
+
+        if (healthBarImage != null)
+        {
+            healthBarImage.fillAmount = (float)currentHealth / maxHealth;
+        }
+    
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    public void Heal(int amount)
+    {
+        currentHealth += amount;
+        if (currentHealth > maxHealth)
+        {
+            currentHealth = maxHealth; // Убедитесь, что текущее здоровье не превышает максимальное
+        }
+        Debug.Log("Healed! Current Health: " + currentHealth);
+    }
+
+    void Die()
+    {
+        if (PV.IsMine)
+        {
+            playerManager.CallDie(PV.ViewID);
         }
     }
 }

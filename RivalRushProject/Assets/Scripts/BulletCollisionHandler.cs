@@ -16,17 +16,11 @@ public class BulletCollisionHandler : MonoBehaviourPun
             // Получаем компонент PhotonView цели столкновения
             PhotonView targetPV = collision.gameObject.GetComponent<PhotonView>();
 
-            // Проверяем, является ли объект, с которым столкнулась пуля, игроком и принадлежит ли он текущему игроку
-            if (targetPV != null && targetPV.IsMine)
+            // Проверяем, является ли объект, с которым столкнулась пуля, игроком
+            if (targetPV != null)
             {
-                // Получаем компонент PlayerHealth цели столкновения
-                PlayerHealth targetHealth = collision.gameObject.GetComponent<PlayerHealth>();
-
-                // Если компонент PlayerHealth доступен, применяем урон к игроку
-                if (targetHealth != null)
-                {
-                    targetHealth.TakeDamage(damage);
-                }
+                // Вызываем RPC функцию для нанесения урона на всех клиентах
+                targetPV.RPC("TakeDamage", RpcTarget.AllBuffered, damage);
             }
         }
 
