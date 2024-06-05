@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using TMPro;
 using Photon.Pun;
 using UnityEngine;
 
@@ -10,10 +11,10 @@ public class ShootingArm : MonoBehaviourPun
     [SerializeField] private float offset;
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private Transform shotPoint;
-    [SerializeField] private Text ammoText; // Ссылка на текстовое поле для отображения патронов
+    
 
     public int maxAmmo = 30;
-    private int currentAmmo;
+    public int currentAmmo;
 
     [SerializeField] private float timeBetweenShots = 0.5f;
     private float shotTimer = 0f;
@@ -21,9 +22,12 @@ public class ShootingArm : MonoBehaviourPun
     public float bulletSpeed = 10f;
 
     [SerializeField] private Camera playerCamera;
+    [SerializeField] private PlayerController playerController;
 
     private void Start()
     {
+        playerController = GetComponentInParent<PlayerController>();
+        
         currentAmmo = maxAmmo;
 
         if (photonView.IsMine)
@@ -34,8 +38,7 @@ public class ShootingArm : MonoBehaviourPun
             {
                 Camera cam = parent.GetComponent<Camera>();
                 if (cam != null)
-                {
-                    playerCamera = cam;
+                { playerCamera = cam;
                     break;
                 }
                 parent = parent.parent;
@@ -46,8 +49,7 @@ public class ShootingArm : MonoBehaviourPun
                 Debug.LogError("Player Camera not found on player!");
             }
         }
-
-        UpdateAmmoUI(); // Обновляем отображение патронов при старте
+        
     }
 
     private void Update()
@@ -82,8 +84,7 @@ public class ShootingArm : MonoBehaviourPun
             photonView.RPC("Shoot", RpcTarget.All, shotPoint.position, transform.rotation);
             shotTimer = Time.time + timeBetweenShots;
             currentAmmo--;
-
-            UpdateAmmoUI(); // Обновляем отображение патронов после выстрела
+            playerController.UpdateUI();
         }
     }
 
@@ -97,22 +98,14 @@ public class ShootingArm : MonoBehaviourPun
         {
             Vector3 mousePosition = playerCamera.ScreenToWorldPoint(Input.mousePosition);
             Vector3 direction = (mousePosition - position).normalized;
-            //Debug.Log("Direction: " + direction);
             bulletRb.velocity = direction * bulletSpeed;
         }
     }
 
-    private void UpdateAmmoUI()
-    {
-        if (ammoText != null)
-        {
-            ammoText.text = "Ammo: " + currentAmmo.ToString();
-        }
-    }
+    
 
     public void RefillAmmo(int amount)
     {
         currentAmmo = Mathf.Min(maxAmmo, currentAmmo + amount);
-        UpdateAmmoUI(); // Обновляем отображение патронов после пополнения
     }
 }

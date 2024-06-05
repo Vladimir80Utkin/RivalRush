@@ -19,7 +19,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
 
     private float horizontalInput;
     private Vector2 moveVector;
-    
+
     private Rigidbody2D rb;
     private PhotonView PV;
 
@@ -33,7 +33,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] private LayerMask Ground;
 
     public int coins = 0;
-    
+
     public int maxHealth = 100;
     public int currentHealth;
 
@@ -42,15 +42,23 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] private GameObject UI;
     [SerializeField] private Image healthBarImage;
     [SerializeField] private TMP_Text coinsTextMeshPro;
+    [SerializeField] private TMP_Text ammoTextMeshPro; // Добавлено для отображения патронов
+
+    
+    
+    [SerializeField] private ShootingArm shootingArm;
+
+    private bool isInAmmoPickupZone = false;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         groundCheck = transform.Find("groundCheck");
-
-        realSpeed = walkSpeed;
+        shootingArm = GetComponentInChildren<ShootingArm>();
         
+        realSpeed = walkSpeed;
+
         PV = GetComponent<PhotonView>();
 
         playerManager = PhotonView.Find((int)PV.InstantiationData[0]).GetComponent<PlayerManager>();
@@ -62,23 +70,28 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         {
             Destroy(UI);
         }
-        currentHealth = maxHealth; // Устанавливаем текущее здоровье равным максимальному при старте
-        coinsTextMeshPro.text = coins.ToString();
+        currentHealth = maxHealth; 
+        shootingArm.currentAmmo = shootingArm.maxAmmo; 
+        UpdateUI();
     }
 
     private void Update()
     {
         if (photonView.IsMine)
         {
+            /*if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                RoomManager.Instance.LeaveRoom();
+            }*/
             Walk();
             Run();
             Jump();
             SetDirection();
             CheckGround();
+            CheckForAmmoPurchase(); // Проверка нажатия клавиши "E" для покупки патронов
         }
         else
         {
-            // Обновляем анимацию на основе полученных данных
             anim.SetFloat("moveX", Mathf.Abs(moveVector.x));
             anim.SetBool("run", realSpeed == runSpeed);
             anim.SetBool("onGround", onGround);
@@ -128,8 +141,16 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         {
             transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
             faceRight = !faceRight;
+
+            // Если у игрока есть дочерний Canvas, нужно развернуть его обратно
+            Transform canvasTransform = transform.Find("CanvasName"); // Название Canvas как в иерархии Unity
+            if (canvasTransform != null)
+            {
+                canvasTransform.localScale = new Vector3(canvasTransform.localScale.x * -1,canvasTransform.localScale.y, canvasTransform.localScale.z);
+            }
         }
     }
+
 
     private void CheckGround()
     {
@@ -137,23 +158,89 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         anim.SetBool("onGround", onGround);
     }
 
+    private void CheckForAmmoPurchase()
+    {
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            if (IsInAmmoPickupZone() && coins >= 1 && shootingArm.currentAmmo < shootingArm.maxAmmo)
+            {
+                photonView.RPC("PurchaseAmmo", RpcTarget.All, 1); // Покупаем 1 патрон при нажатии "E" в зоне пополнения
+            }
+            else
+            {
+                Debug.Log("Недостаточно монет или патроны уже максимальные!");
+            }
+        }
+    }
+
+    private bool IsInAmmoPickupZone()
+    {
+        return isInAmmoPickupZone;
+    }
+
+    public void SetInAmmoPickupZone(bool value)
+    {
+        isInAmmoPickupZone = value;
+    }
+
     public void AddCoin(int amount)
     {
         coins += amount;
-        UpdateCoinsUI(); // Обновляем UI при изменении количества монет
+        UpdateCoinsUI();
     }
 
     public void RemoveCoin(int amount)
     {
         coins -= amount;
-        UpdateCoinsUI(); // Обновляем UI при изменении количества монет
+        UpdateCoinsUI();
+    }
+
+    public void AddAmmo(int amount)
+    {
+        shootingArm.currentAmmo = Mathf.Min(shootingArm.maxAmmo, shootingArm.currentAmmo + amount);
+        UpdateAmmoUI();
+        RefillShootingArmAmmo(amount); // Обновляем патроны в ShootingArm
+    }
+
+    [PunRPC]
+    public void PurchaseAmmo(int amount)
+    {
+        if (coins >= amount)
+        {
+            coins -= amount;
+            AddAmmo(amount);
+            UpdateCoinsUI();
+        }
     }
 
     private void UpdateCoinsUI()
     {
         if (coinsTextMeshPro != null)
         {
-            coinsTextMeshPro.text = coins.ToString(); // Обновляем текст с количеством монет
+            coinsTextMeshPro.text = coins.ToString();
+        }
+    }
+
+    private void UpdateAmmoUI()
+    {
+        if (ammoTextMeshPro != null)
+        {
+            ammoTextMeshPro.text = shootingArm.currentAmmo.ToString();
+        }
+    }
+
+    public void UpdateUI()
+    {
+        UpdateCoinsUI();
+        UpdateAmmoUI();
+    }
+
+    private void RefillShootingArmAmmo(int amount)
+    {
+        ShootingArm shootingArm = GetComponentInChildren<ShootingArm>();
+        if (shootingArm != null)
+        {
+            shootingArm.RefillAmmo(amount);
         }
     }
 
@@ -161,27 +248,32 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (stream.IsWriting)
         {
-            // Отправляем данные другим игрокам
             stream.SendNext(moveVector.x);
             stream.SendNext(realSpeed);
             stream.SendNext(onGround);
             stream.SendNext(faceRight);
+            stream.SendNext(shootingArm.currentAmmo);
+            stream.SendNext(coins);
         }
         else
         {
-            // Получаем данные от других игроков
             moveVector.x = (float)stream.ReceiveNext();
             realSpeed = (float)stream.ReceiveNext();
             onGround = (bool)stream.ReceiveNext();
             bool newFaceRight = (bool)stream.ReceiveNext();
+            shootingArm.currentAmmo = (int)stream.ReceiveNext();
+            coins = (int)stream.ReceiveNext();
 
             if (newFaceRight != faceRight)
             {
                 transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
                 faceRight = newFaceRight;
             }
+            UpdateAmmoUI();
+            UpdateCoinsUI();
         }
     }
+
     [PunRPC]
     public void TakeDamage(int damage)
     {
@@ -191,7 +283,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         {
             healthBarImage.fillAmount = (float)currentHealth / maxHealth;
         }
-    
+
         if (currentHealth <= 0)
         {
             Die();
@@ -203,7 +295,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         currentHealth += amount;
         if (currentHealth > maxHealth)
         {
-            currentHealth = maxHealth; // Убедитесь, что текущее здоровье не превышает максимальное
+            currentHealth = maxHealth;
         }
         Debug.Log("Healed! Current Health: " + currentHealth);
     }

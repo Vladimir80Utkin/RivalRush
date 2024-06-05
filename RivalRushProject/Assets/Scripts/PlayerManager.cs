@@ -5,6 +5,7 @@ using System.IO;
 using Photon.Pun;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerManager : MonoBehaviour
 {
@@ -49,4 +50,5 @@ public class PlayerManager : MonoBehaviour
     {
         PV.RPC("Die", RpcTarget.All, viewID);
     }
+    
 }

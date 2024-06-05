@@ -16,9 +16,15 @@ public class Coin : MonoBehaviourPun
                 if (playerController != null)
                 {
                     playerController.AddCoin(1);
-                    PhotonNetwork.Destroy(gameObject);
+                    photonView.RPC("DestroyCoin", RpcTarget.All);
                 }
             }
         }
+    }
+
+    [PunRPC]
+    void DestroyCoin()
+    {
+        PhotonNetwork.Destroy(gameObject);
     }
 }
