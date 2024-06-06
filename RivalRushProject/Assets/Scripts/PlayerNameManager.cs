@@ -1,15 +1,10 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Photon.Pun;
 using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
-
 public class PlayerNameManager : MonoBehaviour
 {
     [SerializeField] private TMP_InputField usernameInput;
-
     private void Start()
     {
         if (PlayerPrefs.HasKey("username"))
@@ -23,7 +18,6 @@ public class PlayerNameManager : MonoBehaviour
             OnUsernameInputValueChanged();
         }
     }
-
     public void OnUsernameInputValueChanged()
     {
         PhotonNetwork.NickName = usernameInput.text;

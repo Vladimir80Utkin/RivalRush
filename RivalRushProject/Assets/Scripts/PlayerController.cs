@@ -1,51 +1,35 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine.UI;
 using Photon.Pun;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
 {
     [SerializeField] private float walkSpeed = 2f;
     [SerializeField] private float runSpeed = 10f;
     [SerializeField] private float realSpeed;
-
     [SerializeField] private float jumpForce = 7f;
-
     private int jumpCount = 0;
     [SerializeField] private int maxJumpValue = 2;
-
     private float horizontalInput;
     private Vector2 moveVector;
-
     private Rigidbody2D rb;
     private PhotonView PV;
-
     [SerializeField] private Animator anim;
-
     private bool faceRight = true;
-
     [SerializeField] private bool onGround;
     [SerializeField] private Transform groundCheck;
     [SerializeField] private float checkRadius = 0.5f;
     [SerializeField] private LayerMask Ground;
-
     public int coins = 0;
-
     public int maxHealth = 100;
     public int currentHealth;
-
     private PlayerManager playerManager;
-
     [SerializeField] private GameObject UI;
     [SerializeField] private Image healthBarImage;
     [SerializeField] private TMP_Text coinsTextMeshPro;
-    [SerializeField] private TMP_Text ammoTextMeshPro; // Добавлено для отображения патронов
-
-    
-    
+    [SerializeField] private TMP_Text ammoTextMeshPro;
     [SerializeField] private ShootingArm shootingArm;
 
     private bool isInAmmoPickupZone = false;
@@ -79,10 +63,10 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (photonView.IsMine)
         {
-            /*if (Input.GetKeyDown(KeyCode.Escape))
+            if (Input.GetKeyDown(KeyCode.Escape))
             {
-                RoomManager.Instance.LeaveRoom();
-            }*/
+                ExitGame();
+            }
             Walk();
             Run();
             Jump();
@@ -141,9 +125,8 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         {
             transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
             faceRight = !faceRight;
-
-            // Если у игрока есть дочерний Canvas, нужно развернуть его обратно
-            Transform canvasTransform = transform.Find("CanvasName"); // Название Canvas как в иерархии Unity
+            
+            Transform canvasTransform = transform.Find("CanvasName"); 
             if (canvasTransform != null)
             {
                 canvasTransform.localScale = new Vector3(canvasTransform.localScale.x * -1,canvasTransform.localScale.y, canvasTransform.localScale.z);
@@ -164,7 +147,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         {
             if (IsInAmmoPickupZone() && coins >= 1 && shootingArm.currentAmmo < shootingArm.maxAmmo)
             {
-                photonView.RPC("PurchaseAmmo", RpcTarget.All, 1); // Покупаем 1 патрон при нажатии "E" в зоне пополнения
+                photonView.RPC("PurchaseAmmo", RpcTarget.All, 1);
             }
             else
             {
@@ -199,7 +182,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     {
         shootingArm.currentAmmo = Mathf.Min(shootingArm.maxAmmo, shootingArm.currentAmmo + amount);
         UpdateAmmoUI();
-        RefillShootingArmAmmo(amount); // Обновляем патроны в ShootingArm
+        RefillShootingArmAmmo(amount);
     }
 
     [PunRPC]
@@ -306,5 +289,10 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         {
             playerManager.CallDie(PV.ViewID);
         }
+    }
+    public void ExitGame()
+    {
+        PhotonNetwork.Disconnect();
+        SceneManager.LoadScene(0);
     }
 }

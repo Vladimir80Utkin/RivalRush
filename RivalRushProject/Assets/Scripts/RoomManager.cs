@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using Photon.Pun;
 using Unity.Mathematics;
@@ -41,22 +38,4 @@ public class RoomManager : MonoBehaviourPunCallbacks
             PhotonNetwork.Instantiate(Path.Combine("PhotonPrefabs", "PlayerManager"), Vector3.zero, quaternion.identity);
         }
     }
-    /*public void LeaveRoom()
-    {
-        if (PhotonNetwork.IsMasterClient && PhotonNetwork.PlayerList.Length > 1)
-        {
-            // Если текущий игрок - хост, передаем хостство другому игроку
-            for (int i = 0; i < PhotonNetwork.PlayerList.Length; i++)
-            {
-                if (!PhotonNetwork.PlayerList[i].IsMasterClient)
-                {
-                    PhotonNetwork.SetMasterClient(PhotonNetwork.PlayerList[i]);
-                    break;
-                }
-            }
-        }
-
-        PhotonNetwork.LeaveRoom();
-        SceneManager.LoadScene(0); // Загружаем сцену с индексом 0
-    }*/
 }
